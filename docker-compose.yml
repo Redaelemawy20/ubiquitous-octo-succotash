@@ -1,0 +1,51 @@
+version: "3.8"
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: esgen-mongodb
+    ports:
+      - "27017:27017"
+    networks:
+      - esgen-network
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password123
+      - MONGO_INITDB_DATABASE=nestdb
+    volumes:
+      - mongodb_data:/data/db
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    container_name: esgen-backend
+    ports:
+      - "3000:3000"
+    networks:
+      - esgen-network
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://admin:password123@mongodb:27017/nestdb?authSource=admin
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: esgen-frontend
+    ports:
+      - "3001:3001"
+    networks:
+      - esgen-network
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+networks:
+  esgen-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
