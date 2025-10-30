@@ -1,1 +1,87 @@
 @import "tailwindcss";
+
+@theme {
+  --color-background: #ffffff; /* page background */
+  --color-foreground: #000; /* normal text colors */
+  --color-primary: #f0754d; /* primary background */
+  --color-primary-foreground: #e7edf1; /* primary text color */
+  --color-secondary: #1f2937; /* secondary background */
+  --color-secondary-foreground: #e7edf1; /* secondary text color */
+  --color-muted: #f0754d; /* muted background */
+  --color-muted-foreground: #b3bcc7; /* muted text color */
+  --color-destructive: #f54d4d; /* danger color */
+  --color-destructive-foreground: #e7edf1; /* danger text color */
+  --color-success: #36d19a; /* success background */
+  --color-success-foreground: #e7edf1; /* success text color */
+  --color-border: #1c273f; /* input fields borders color #11182780 (50%) */
+  --color-ring: rgba(17, 24, 39, 0.5); /* ring color */
+  --color-light: #ffffff; /* light color */
+  /* Border radius tokens */
+  --radius: 0.5rem;
+  --radius-lg: 0.5rem;
+  --radius-md: calc(0.5rem - 2px);
+  --radius-sm: calc(0.5rem - 4px);
+
+  /* Font families */
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-secondary: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+
+  /* Font weights rems */
+  --text-4xl: 3.125em; /* 50px */
+  --text-3xl: 2.5em; /* 40px */
+  --text-2xl: 2.25em; /* 36px */
+  --text-xl: 1.5em; /* 24px */
+  --text-lg: 1.25em; /* 20px */
+  --text-md: 1em; /* 16px */
+  --text-sm: 0.875em; /* 14px */
+  --text-xs: 0.75em; /* 12px */
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow-x: hidden;
+  }
+
+  #root {
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary text-primary-foreground hover:opacity-90 transition-opacity duration-200;
+  }
+
+  .btn-danger {
+    @apply bg-destructive text-destructive-foreground hover:opacity-90 transition-opacity duration-200;
+  }
+
+  .btn-success {
+    @apply bg-success text-success-foreground hover:opacity-90 transition-opacity duration-200;
+  }
+
+  .input-field {
+    @apply bg-background text-foreground border border-border rounded-md;
+  }
+
+  /* Font utilities */
+  .font-secondary {
+    font-family: var(--font-secondary);
+  }
+}
