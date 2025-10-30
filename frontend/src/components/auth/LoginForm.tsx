@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { Eye, EyeOff } from "lucide-react";
 import { loginSchema } from "../../lib/validation";
@@ -139,12 +139,12 @@ export default function LoginForm() {
       {/* Sign Up Link line */}
       <div className="font-secondary text-center font-medium leading-[21px]">
         Don't have an account?{" "}
-        <a
-          href="#"
+        <Link
+          to="/signup"
           className=" hover:text-primary underline transition-colors underline-offset-[22%]"
         >
           Sign up
-        </a>
+        </Link>
       </div>
     </form>
   );
