@@ -11,26 +11,71 @@ Prerequisites:
 
 Steps:
 
-1. Install dependencies
+1.  Create backend environment file (copy from example)
 
-   - In `backend/`: `pnpm install`
-   - In `frontend/`: `pnpm install`
+    Windows (PowerShell):
 
-2. Start the backend (NestJS)
+    ```powershell
+    Copy-Item backend/.env.example backend/.env
+    ```
 
-   - From `backend/`: `pnpm start:dev`
-   - Backend will listen on `http://localhost:3000`
-   - Uses MongoDB at `mongodb://localhost:27017/nestdb` by default
-   - To customize CORS, set `CORS_ORIGINS`, e.g.: `CORS_ORIGINS=http://localhost:3001`
+    macOS/Linux:
 
-3. Start the frontend (Vite + React)
-   - From `frontend/`: `pnpm dev -- --port 3001`
-   - Open `http://localhost:3001`
+    ```bash
+    cp backend/.env.example backend/.env
+    ```
 
-Notes:
+    If you don't have the example file, create `backend/.env` with:
 
-- If you prefer Vite’s default port (5173), add it to backend CORS: `CORS_ORIGINS=http://localhost:5173`
-- API base URL is `http://localhost:3000` (see `frontend/src/lib/api.ts`). Ensure the backend is reachable from the browser.
+    ```
+    MONGODB_URI=mongodb://localhost:27017/nestdb
+    CORS_ORIGINS=http://localhost:5173
+    PORT=3000
+    JWT_SECRET=Verysecret
+    JWT_EXPIRES_IN=1h
+    ```
+
+2.  Install dependencies
+
+    In `backend/`:
+
+    ```bash
+    pnpm install
+    ```
+
+    In `frontend/`:
+
+    ```bash
+    pnpm install
+    ```
+
+3.  Start the backend (NestJS)
+
+    From `backend/`:
+
+    ```bash
+    pnpm start:dev
+    ```
+
+    Backend URL:
+
+    ```
+    http://localhost:3000
+    ```
+
+4.  Start the frontend (Vite + React)
+
+    From `frontend/`:
+
+    ```bash
+    pnpm dev
+    ```
+
+    Open:
+
+    ```
+    http://localhost:3001
+    ```
 
 ### Option 2 — Run with Docker Compose
 
@@ -40,15 +85,35 @@ Prerequisites:
 
 Steps:
 
-1. From the project root: `docker compose up --build -d`
-2. Open the app at `http://localhost:3001`
+From the project root:
+
+```bash
+docker compose up --build -d
+```
+
+Open the app:
+
+```
+http://localhost:3001
+```
 
 What gets started:
 
-- MongoDB on `localhost:27017`
-- Backend (NestJS) on `http://localhost:3000`
-- Frontend (built + served) on `http://localhost:3001`
+- MongoDB:
+  ```
+  localhost:27017
+  ```
+- Backend (NestJS):
+  ```
+  http://localhost:3000
+  ```
+- Frontend:
+  ```
+  http://localhost:3001
+  ```
 
 To stop:
 
-- `docker compose down`
+```bash
+docker compose down
+```
