@@ -12,10 +12,20 @@ import type { Response, Request } from 'express';
 import { AuthService } from './auth.service';
 import { SignupDto } from './dto/signup.dto';
 import { SigninDto } from './dto/signin.dto';
+import { JwtService } from '@nestjs/jwt';
+
+interface JwtPayload {
+  sub: string;
+  email: string;
+  name?: string;
+}
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private jwtService: JwtService,
+  ) {}
 
   @Post('signup')
   async signUp(
@@ -72,14 +82,27 @@ export class AuthController {
   }
 
   @Post('me')
-  getProfile(@Req() request: Request) {
+  async getProfile(@Req() request: Request) {
     const token = request.cookies?.token as string | undefined;
     if (!token) {
       throw new UnauthorizedException('Authentication required');
     }
 
-    // You can decode the JWT here to get user info
-    // For now, return a simple response
-    return { message: 'Profile endpoint - implement JWT decode' };
+    try {
+      // Decode and verify the JWT token
+      const payload = await this.jwtService.verifyAsync<JwtPayload>(token);
+
+      // Extract user info from token payload
+      const user = {
+        _id: payload.sub,
+        email: payload.email,
+        name: payload.name || 'User', // Fallback if name not in token
+      };
+
+      return { user };
+    } catch {
+      // Token is invalid or expired
+      throw new UnauthorizedException('Invalid or expired token');
+    }
   }
 }

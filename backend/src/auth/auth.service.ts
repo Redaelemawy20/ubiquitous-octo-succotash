@@ -18,7 +18,7 @@ export class AuthService {
 
     const user = await this.usersService.create(name, email, password);
 
-    const payload = { sub: user._id, email: user.email };
+    const payload = { sub: user._id, email: user.email, name: user.name };
     const access_token = await this.jwtService.signAsync(payload);
 
     // Return user without password
@@ -46,7 +46,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const payload = { sub: user._id, email: user.email };
+    const payload = { sub: user._id, email: user.email, name: user.name };
     return {
       access_token: await this.jwtService.signAsync(payload),
     };
