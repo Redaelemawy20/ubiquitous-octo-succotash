@@ -26,6 +26,7 @@ services:
     environment:
       - NODE_ENV=production
       - MONGODB_URI=mongodb://admin:password123@mongodb:27017/nestdb?authSource=admin
+      - CORS_ORIGINS=http://localhost:3001,http://frontend:3001
     depends_on:
       - mongodb
     restart: unless-stopped
