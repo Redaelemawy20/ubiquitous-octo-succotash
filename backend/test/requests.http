@@ -1,0 +1,17 @@
+### login - success
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+    "username": "maria",
+    "password": "guess"
+}
+
+### login - failure
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+    "username": "hamo",
+    "password": "wrongpassword"
+}
