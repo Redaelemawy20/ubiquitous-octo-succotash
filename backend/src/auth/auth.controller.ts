@@ -1,20 +1,5 @@
-import {
-  Body,
-  Controller,
-  Post,
-  HttpCode,
-  HttpStatus,
-  Res,
-  UseGuards,
-  Logger,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBody,
-  ApiSecurity,
-} from '@nestjs/swagger';
+import { Body, Controller, Post, Res, UseGuards, Logger } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { AuthService } from './auth.service';
 import { SignupDto } from './dto/signup.dto';
@@ -22,6 +7,10 @@ import { SigninDto } from './dto/signin.dto';
 import { JwtService } from '@nestjs/jwt';
 import { AuthGuard } from './guards/auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
+import { SignupDocs } from './decorators/signup.docs';
+import { SigninDocs } from './decorators/signin.docs';
+import { LogoutDocs } from './decorators/logout.docs';
+import { MeDocs } from './decorators/me.docs';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -33,33 +22,7 @@ export class AuthController {
   ) {}
 
   @Post('signup')
-  @ApiOperation({ summary: 'Register a new user' })
-  @ApiBody({ type: SignupDto })
-  @ApiResponse({
-    status: 201,
-    description: 'User successfully registered',
-    schema: {
-      type: 'object',
-      properties: {
-        user: {
-          type: 'object',
-          properties: {
-            _id: { type: 'string' },
-            email: { type: 'string' },
-            name: { type: 'string' },
-          },
-        },
-      },
-    },
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Bad request - validation error',
-  })
-  @ApiResponse({
-    status: 409,
-    description: 'Conflict - user already exists',
-  })
+  @SignupDocs()
   async signUp(
     @Body() signupDto: SignupDto,
     @Res({ passthrough: true }) response: Response,
@@ -83,28 +46,8 @@ export class AuthController {
     return { user: result.user };
   }
 
-  @HttpCode(HttpStatus.OK)
   @Post('login')
-  @ApiOperation({ summary: 'Login user' })
-  @ApiBody({ type: SigninDto })
-  @ApiResponse({
-    status: 200,
-    description: 'Login successful',
-    schema: {
-      type: 'object',
-      properties: {
-        message: { type: 'string', example: 'Login successful' },
-      },
-    },
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Bad request - validation error',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized - invalid credentials',
-  })
+  @SigninDocs()
   async signIn(
     @Body() signinDto: SigninDto,
     @Res({ passthrough: true }) response: Response,
@@ -132,17 +75,7 @@ export class AuthController {
   }
 
   @Post('logout')
-  @ApiOperation({ summary: 'Logout user' })
-  @ApiResponse({
-    status: 200,
-    description: 'Logout successful',
-    schema: {
-      type: 'object',
-      properties: {
-        message: { type: 'string', example: 'Logout successful' },
-      },
-    },
-  })
+  @LogoutDocs()
   logout(@Res({ passthrough: true }) response: Response) {
     this.logger.log({
       level: 'info',
@@ -160,29 +93,7 @@ export class AuthController {
 
   @Post('me')
   @UseGuards(AuthGuard)
-  @ApiOperation({ summary: 'Get current user profile' })
-  @ApiSecurity('cookieAuth')
-  @ApiResponse({
-    status: 200,
-    description: 'User profile retrieved successfully',
-    schema: {
-      type: 'object',
-      properties: {
-        user: {
-          type: 'object',
-          properties: {
-            _id: { type: 'string' },
-            email: { type: 'string' },
-            name: { type: 'string' },
-          },
-        },
-      },
-    },
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized - authentication required',
-  })
+  @MeDocs()
   getProfile(
     @CurrentUser() user: { _id: string; email: string; name?: string },
   ) {
