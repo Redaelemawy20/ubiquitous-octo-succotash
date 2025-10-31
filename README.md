@@ -63,6 +63,12 @@ Steps:
     http://localhost:3000
     ```
 
+    API Documentation (Swagger):
+
+    ```
+    http://localhost:3000/api/v1/docs
+    ```
+
 4.  Start the frontend (Vite + React)
 
     From `frontend/`:
@@ -106,6 +112,10 @@ What gets started:
 - Backend (NestJS):
   ```
   http://localhost:3000
+  ```
+- API Documentation (Swagger):
+  ```
+  http://localhost:3000/api/v1/docs
   ```
 - Frontend:
   ```
