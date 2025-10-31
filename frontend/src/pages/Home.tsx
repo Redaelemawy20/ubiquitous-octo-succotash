@@ -1,3 +1,4 @@
+import { Button } from "../components/ui/button";
 import { useAuth } from "../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 
@@ -16,18 +17,13 @@ export default function Home() {
         <h1 className="text-4xl font-bold mb-4">Welcome to Our App</h1>
         {user && (
           <div className="mb-6">
-            <p className="text-lg text-gray-600">
-              Hello, {user.name || user.email}!
-            </p>
-            <p className="text-sm text-gray-500">{user.email}</p>
+            <p className="text-lg">Hello, {user.name || user.email}!</p>
+            <p className="text-sm text-muted-foreground">{user.email}</p>
           </div>
         )}
-        <button
-          onClick={handleLogout}
-          className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 focus:outline-none focus:bg-red-700"
-        >
+        <Button onClick={handleLogout} variant="destructive">
           Logout
-        </button>
+        </Button>
       </div>
     </div>
   );
