@@ -1,4 +1,4 @@
-### Sign up a new user
+### Sign up a new user with invalid password
 POST http://localhost:3000/auth/signup
 Content-Type: application/json
 
@@ -6,6 +6,16 @@ Content-Type: application/json
   "name": "John Doe",
   "email": "john@example.com",
   "password": "password123"
+}
+
+### Sign up a new user with valid password
+POST http://localhost:3000/auth/signup
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "password123#"
 }
 
 ### Sign in with existing user
