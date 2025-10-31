@@ -1,4 +1,12 @@
-import { Body, Controller, Post, Res, UseGuards, Logger } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  Get,
+  Res,
+  UseGuards,
+  Logger,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { AuthService } from './auth.service';
@@ -91,7 +99,7 @@ export class AuthController {
     return { message: 'Logout successful' };
   }
 
-  @Post('me')
+  @Get('me')
   @UseGuards(AuthGuard)
   @MeDocs()
   getProfile(

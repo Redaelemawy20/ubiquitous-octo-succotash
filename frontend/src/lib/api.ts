@@ -82,7 +82,7 @@ export async function getCurrentUser(): Promise<{
 } | null> {
   try {
     const response = await fetchWithCredentials(`${API_BASE_URL}/auth/me`, {
-      method: "POST",
+      method: "GET",
     });
 
     if (!response.ok) {

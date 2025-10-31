@@ -27,9 +27,7 @@ Content-Type: application/json
   "password": "password123"
 }
 
-### Post profile of authenticated user
-  POST http://localhost:3000/api/v1/auth/me
-  Content-Type: application/json
-
+### Get profile of authenticated user
+GET http://localhost:3000/api/v1/auth/me
 
 
