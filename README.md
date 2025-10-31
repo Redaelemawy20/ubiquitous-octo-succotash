@@ -164,3 +164,9 @@ View last N lines of logs:
 docker compose logs --tail=100
 docker compose logs --tail=50 backend
 ```
+
+### Testing API Requests
+
+You can test API requests directly in VS Code using the REST Client extension.
+
+Open `backend/test/auth.http` and click the "Send Request" link above each request to test the authentication endpoints.
