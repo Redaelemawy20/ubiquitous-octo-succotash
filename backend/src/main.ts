@@ -30,8 +30,8 @@ async function bootstrap() {
     });
 
     const config = new DocumentBuilder()
-      .setTitle('My App API')
-      .setDescription('API documentation for my NestJS app')
+      .setTitle('Esgen API')
+      .setDescription('API documentation for Esgen')
       .setVersion('1.0')
       .addBearerAuth()
       .addApiKey(
