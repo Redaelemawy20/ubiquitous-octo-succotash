@@ -117,3 +117,40 @@ To stop:
 ```bash
 docker compose down
 ```
+
+To view logs:
+
+View logs for all containers:
+
+```bash
+docker compose logs
+```
+
+View logs for a specific container:
+
+```bash
+docker compose logs backend
+docker compose logs frontend
+docker compose logs mongodb
+```
+
+Follow logs in real-time (with `-f` flag):
+
+```bash
+docker compose logs -f
+docker compose logs -f backend
+```
+
+View logs with timestamps:
+
+```bash
+docker compose logs -t
+docker compose logs -t backend
+```
+
+View last N lines of logs:
+
+```bash
+docker compose logs --tail=100
+docker compose logs --tail=50 backend
+```
