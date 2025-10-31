@@ -1,5 +1,5 @@
 ### Sign up a new user with invalid password
-POST http://localhost:3000/auth/signup
+POST http://localhost:3000/api/v1/auth/signup
 Content-Type: application/json
 
 {
@@ -9,7 +9,7 @@ Content-Type: application/json
 }
 
 ### Sign up a new user with valid password
-POST http://localhost:3000/auth/signup
+POST http://localhost:3000/api/v1/auth/signup
 Content-Type: application/json
 
 {
@@ -19,10 +19,17 @@ Content-Type: application/json
 }
 
 ### Sign in with existing user
-POST http://localhost:3000/auth/login
+POST http://localhost:3000/api/v1/auth/login
 Content-Type: application/json
 
 {
   "email": "john@example.com",
   "password": "password123"
 }
+
+### Post profile of authenticated user
+  POST http://localhost:3000/api/v1/auth/me
+  Content-Type: application/json
+
+
+

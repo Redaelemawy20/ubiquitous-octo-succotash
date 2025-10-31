@@ -5,8 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Res,
-  Req,
-  UnauthorizedException,
+  UseGuards,
   Logger,
 } from '@nestjs/common';
 import {
@@ -16,17 +15,13 @@ import {
   ApiBody,
   ApiSecurity,
 } from '@nestjs/swagger';
-import type { Response, Request } from 'express';
+import type { Response } from 'express';
 import { AuthService } from './auth.service';
 import { SignupDto } from './dto/signup.dto';
 import { SigninDto } from './dto/signin.dto';
 import { JwtService } from '@nestjs/jwt';
-
-interface JwtPayload {
-  sub: string;
-  email: string;
-  name?: string;
-}
+import { AuthGuard } from './guards/auth.guard';
+import { CurrentUser } from './decorators/current-user.decorator';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -164,6 +159,7 @@ export class AuthController {
   }
 
   @Post('me')
+  @UseGuards(AuthGuard)
   @ApiOperation({ summary: 'Get current user profile' })
   @ApiSecurity('cookieAuth')
   @ApiResponse({
@@ -187,38 +183,9 @@ export class AuthController {
     status: 401,
     description: 'Unauthorized - authentication required',
   })
-  async getProfile(@Req() request: Request) {
-    const token = request.cookies?.token as string | undefined;
-    if (!token) {
-      this.logger.log({
-        level: 'error',
-        message: 'Get profile failed: no token provided',
-      });
-      throw new UnauthorizedException('Authentication required');
-    }
-
-    try {
-      // Decode and verify the JWT token
-      const payload = await this.jwtService.verifyAsync<JwtPayload>(token);
-
-      // Extract user info from token payload
-      const user = {
-        _id: payload.sub,
-        email: payload.email,
-        name: payload.name || 'User', // Fallback if name not in token
-      };
-
-      return { user };
-    } catch (error) {
-      // Token is invalid or expired
-      this.logger.log({
-        level: 'error',
-        message: 'Invalid or expired token',
-        data: {
-          error: error instanceof Error ? error.message : String(error),
-        },
-      });
-      throw new UnauthorizedException('Invalid or expired token');
-    }
+  getProfile(
+    @CurrentUser() user: { _id: string; email: string; name?: string },
+  ) {
+    return { user };
   }
 }
