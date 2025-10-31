@@ -11,7 +11,9 @@ Prerequisites:
 
 Steps:
 
-1.  Create backend environment file (copy from example)
+1.  Create environment files (copy from example)
+
+    **Backend:**
 
     Windows (PowerShell):
 
@@ -33,6 +35,26 @@ Steps:
     PORT=3000
     JWT_SECRET=Verysecret
     JWT_EXPIRES_IN=1h
+    ```
+
+    **Frontend:**
+
+    Windows (PowerShell):
+
+    ```powershell
+    Copy-Item frontend/.env.example frontend/.env
+    ```
+
+    macOS/Linux:
+
+    ```bash
+    cp frontend/.env.example frontend/.env
+    ```
+
+    If you don't have the example file, create `frontend/.env` with:
+
+    ```
+    VITE_API_BASE_URL=http://localhost:3000/api/v1
     ```
 
 2.  Install dependencies
