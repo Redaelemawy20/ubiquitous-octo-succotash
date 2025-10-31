@@ -5,6 +5,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { appLogger } from './logger/app-logger';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import mongoose from 'mongoose';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   try {
@@ -41,7 +42,8 @@ async function bootstrap() {
     app.use(cookieParser());
 
     app.useGlobalPipes(new ValidationPipe());
-
+    // set prefix
+    app.setGlobalPrefix('api/v1');
     const corsOrigins =
       process.env.CORS_ORIGINS && process.env.CORS_ORIGINS.length
         ? process.env.CORS_ORIGINS.split(',').map((origin) => origin.trim())
@@ -52,6 +54,24 @@ async function bootstrap() {
       methods: ['GET', 'POST', 'PUT', 'DELETE'],
       credentials: true,
     });
+
+    const config = new DocumentBuilder()
+      .setTitle('My App API')
+      .setDescription('API documentation for my NestJS app')
+      .setVersion('1.0')
+      .addBearerAuth()
+      .addApiKey(
+        {
+          type: 'apiKey',
+          in: 'cookie',
+          name: 'token',
+        },
+        'cookieAuth',
+      )
+      .build();
+
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api/v1/docs', app, document);
 
     const port = process.env.PORT ?? 3000;
     await app.listen(port, () => {

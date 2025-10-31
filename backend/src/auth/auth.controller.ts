@@ -9,6 +9,13 @@ import {
   UnauthorizedException,
   Logger,
 } from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBody,
+  ApiSecurity,
+} from '@nestjs/swagger';
 import type { Response, Request } from 'express';
 import { AuthService } from './auth.service';
 import { SignupDto } from './dto/signup.dto';
@@ -21,6 +28,7 @@ interface JwtPayload {
   name?: string;
 }
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   private readonly logger = new Logger(AuthController.name);
@@ -30,6 +38,33 @@ export class AuthController {
   ) {}
 
   @Post('signup')
+  @ApiOperation({ summary: 'Register a new user' })
+  @ApiBody({ type: SignupDto })
+  @ApiResponse({
+    status: 201,
+    description: 'User successfully registered',
+    schema: {
+      type: 'object',
+      properties: {
+        user: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            email: { type: 'string' },
+            name: { type: 'string' },
+          },
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request - validation error',
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'Conflict - user already exists',
+  })
   async signUp(
     @Body() signupDto: SignupDto,
     @Res({ passthrough: true }) response: Response,
@@ -55,6 +90,26 @@ export class AuthController {
 
   @HttpCode(HttpStatus.OK)
   @Post('login')
+  @ApiOperation({ summary: 'Login user' })
+  @ApiBody({ type: SigninDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Login successful',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', example: 'Login successful' },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request - validation error',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - invalid credentials',
+  })
   async signIn(
     @Body() signinDto: SigninDto,
     @Res({ passthrough: true }) response: Response,
@@ -82,6 +137,17 @@ export class AuthController {
   }
 
   @Post('logout')
+  @ApiOperation({ summary: 'Logout user' })
+  @ApiResponse({
+    status: 200,
+    description: 'Logout successful',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', example: 'Logout successful' },
+      },
+    },
+  })
   logout(@Res({ passthrough: true }) response: Response) {
     this.logger.log({
       level: 'info',
@@ -98,6 +164,29 @@ export class AuthController {
   }
 
   @Post('me')
+  @ApiOperation({ summary: 'Get current user profile' })
+  @ApiSecurity('cookieAuth')
+  @ApiResponse({
+    status: 200,
+    description: 'User profile retrieved successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        user: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            email: { type: 'string' },
+            name: { type: 'string' },
+          },
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - authentication required',
+  })
   async getProfile(@Req() request: Request) {
     const token = request.cookies?.token as string | undefined;
     if (!token) {
