@@ -120,11 +120,14 @@ export class AuthController {
       };
 
       return { user };
-    } catch {
+    } catch (error) {
       // Token is invalid or expired
       this.logger.log({
         level: 'error',
         message: 'Invalid or expired token',
+        data: {
+          error: error instanceof Error ? error.message : String(error),
+        },
       });
       throw new UnauthorizedException('Invalid or expired token');
     }

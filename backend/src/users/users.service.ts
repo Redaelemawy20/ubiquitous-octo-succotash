@@ -1,4 +1,9 @@
-import { Injectable, ConflictException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from './user.schema';
@@ -36,7 +41,20 @@ export class UsersService {
       password: hashedPassword,
     });
 
-    const savedUser = await createdUser.save();
+    let savedUser: UserDocument;
+    try {
+      savedUser = await createdUser.save();
+    } catch (error) {
+      this.logger.log({
+        level: 'error',
+        message: 'Failed to save user to database',
+        data: {
+          email,
+          error: error instanceof Error ? error.message : String(error),
+        },
+      });
+      throw new InternalServerErrorException('Failed to create user');
+    }
 
     this.logger.log({
       level: 'info',
@@ -59,6 +77,17 @@ export class UsersService {
     plainPassword: string,
     hashedPassword: string,
   ): Promise<boolean> {
-    return await bcrypt.compare(plainPassword, hashedPassword);
+    try {
+      return await bcrypt.compare(plainPassword, hashedPassword);
+    } catch (error) {
+      this.logger.log({
+        level: 'error',
+        message: 'Password validation error',
+        data: {
+          error: error instanceof Error ? error.message : String(error),
+        },
+      });
+      return false;
+    }
   }
 }

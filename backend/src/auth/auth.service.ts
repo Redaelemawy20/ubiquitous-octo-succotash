@@ -1,4 +1,9 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { SignupDto } from './dto/signup.dto';
@@ -20,7 +25,20 @@ export class AuthService {
     const user = await this.usersService.create(name, email, password);
 
     const payload = { sub: user._id, email: user.email, name: user.name };
-    const access_token = await this.jwtService.signAsync(payload);
+
+    let access_token: string;
+    try {
+      access_token = await this.jwtService.signAsync(payload);
+    } catch (error) {
+      this.logger.log({
+        level: 'error',
+        message: 'Failed to sign token during signup',
+        data: { error: (error as Error).message, userId: user._id },
+      });
+      throw new InternalServerErrorException(
+        'Failed to create authentication token',
+      );
+    }
 
     this.logger.log({
       level: 'info',
@@ -70,9 +88,18 @@ export class AuthService {
       message: 'User successfully signed in',
       data: { userId: user._id, email: user.email },
     });
-
-    return {
-      access_token: await this.jwtService.signAsync(payload),
-    };
+    try {
+      const access_token = await this.jwtService.signAsync(payload);
+      return {
+        access_token,
+      };
+    } catch (error) {
+      this.logger.log({
+        level: 'error',
+        message: 'Failed to sign token',
+        data: { error: (error as Error).message },
+      });
+      throw new InternalServerErrorException('Failed to sign token');
+    }
   }
 }
