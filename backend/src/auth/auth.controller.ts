@@ -7,6 +7,7 @@ import {
   Res,
   Req,
   UnauthorizedException,
+  Logger,
 } from '@nestjs/common';
 import type { Response, Request } from 'express';
 import { AuthService } from './auth.service';
@@ -22,6 +23,7 @@ interface JwtPayload {
 
 @Controller('auth')
 export class AuthController {
+  private readonly logger = new Logger(AuthController.name);
   constructor(
     private authService: AuthService,
     private jwtService: JwtService,
@@ -32,6 +34,11 @@ export class AuthController {
     @Body() signupDto: SignupDto,
     @Res({ passthrough: true }) response: Response,
   ) {
+    this.logger.log({
+      level: 'info',
+      message: 'signUp request received',
+      data: signupDto,
+    });
     const result = await this.authService.signUp(signupDto);
 
     // Set HTTP-only cookie
@@ -52,6 +59,11 @@ export class AuthController {
     @Body() signinDto: SigninDto,
     @Res({ passthrough: true }) response: Response,
   ) {
+    this.logger.log({
+      level: 'info',
+      message: 'signIn request received',
+      data: signinDto,
+    });
     const result = await this.authService.signIn(
       signinDto.email,
       signinDto.password,
@@ -71,6 +83,10 @@ export class AuthController {
 
   @Post('logout')
   logout(@Res({ passthrough: true }) response: Response) {
+    this.logger.log({
+      level: 'info',
+      message: 'User logout request',
+    });
     // Clear the cookie
     response.clearCookie('token', {
       httpOnly: true,
@@ -85,6 +101,10 @@ export class AuthController {
   async getProfile(@Req() request: Request) {
     const token = request.cookies?.token as string | undefined;
     if (!token) {
+      this.logger.log({
+        level: 'error',
+        message: 'Get profile failed: no token provided',
+      });
       throw new UnauthorizedException('Authentication required');
     }
 
@@ -102,6 +122,10 @@ export class AuthController {
       return { user };
     } catch {
       // Token is invalid or expired
+      this.logger.log({
+        level: 'error',
+        message: 'Invalid or expired token',
+      });
       throw new UnauthorizedException('Invalid or expired token');
     }
   }

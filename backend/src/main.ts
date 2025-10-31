@@ -2,9 +2,12 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import cookieParser from 'cookie-parser';
 import { ValidationPipe } from '@nestjs/common';
+import { appLogger } from './logger/app-logger';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: appLogger,
+  });
 
   // Enable cookie parser
   app.use(cookieParser());
@@ -22,6 +25,11 @@ async function bootstrap() {
     credentials: true,
   });
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT ?? 3000, () => {
+    appLogger.log({
+      level: 'info',
+      message: `Application is running on port ${process.env.PORT ?? 3000}`,
+    });
+  });
 }
 void bootstrap();

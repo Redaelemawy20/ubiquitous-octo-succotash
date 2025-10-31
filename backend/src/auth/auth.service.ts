@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { SignupDto } from './dto/signup.dto';
@@ -6,6 +6,7 @@ import { UserDocument } from '../users/user.schema';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
@@ -21,6 +22,12 @@ export class AuthService {
     const payload = { sub: user._id, email: user.email, name: user.name };
     const access_token = await this.jwtService.signAsync(payload);
 
+    this.logger.log({
+      level: 'info',
+      message: 'User successfully signed up',
+      data: { userId: user._id, email: user.email },
+    });
+
     // Return user without password
     const userObject = user.toObject() as UserDocument;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -35,6 +42,11 @@ export class AuthService {
   async signIn(email: string, password: string) {
     const user = await this.usersService.findOneByEmail(email);
     if (!user) {
+      this.logger.log({
+        level: 'error',
+        message: 'Invalid credentials',
+        data: { email },
+      });
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -43,10 +55,22 @@ export class AuthService {
       user.password,
     );
     if (!isPasswordValid) {
+      this.logger.log({
+        level: 'error',
+        message: 'Invalid credentials',
+        data: { email },
+      });
       throw new UnauthorizedException('Invalid credentials');
     }
 
     const payload = { sub: user._id, email: user.email, name: user.name };
+
+    this.logger.log({
+      level: 'info',
+      message: 'User successfully signed in',
+      data: { userId: user._id, email: user.email },
+    });
+
     return {
       access_token: await this.jwtService.signAsync(payload),
     };
