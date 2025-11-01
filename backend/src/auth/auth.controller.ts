@@ -21,6 +21,7 @@ import { SignupDocs } from './decorators/signup.docs';
 import { SigninDocs } from './decorators/signin.docs';
 import { LogoutDocs } from './decorators/logout.docs';
 import { MeDocs } from './decorators/me.docs';
+import { RefreshDocs } from './decorators/refresh.docs';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -138,6 +139,7 @@ export class AuthController {
   }
 
   @Post('refresh')
+  @RefreshDocs()
   async refresh(
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
