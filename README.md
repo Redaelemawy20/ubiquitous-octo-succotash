@@ -34,7 +34,7 @@ Steps:
     CORS_ORIGINS=http://localhost:5173
     PORT=3000
     JWT_SECRET=Verysecret
-    JWT_EXPIRES_IN=1h
+    JWT_EXPIRES_IN=3600
     ```
 
     **Frontend:**
@@ -192,3 +192,12 @@ docker compose logs --tail=50 backend
 You can test API requests directly in VS Code using the REST Client extension.
 
 Open `backend/test/auth.http` and click the "Send Request" link above each request to test the authentication endpoints.
+
+## Documentation
+
+For more information, see the following documentation files:
+
+- To see frontend structure, see [frontend-structure.md](./frontend-structure.md)
+- To see backend structure, see [backend-structure.md](./backend-structure.md)
+- To see authentication flow, see [authentication-flow.md](./authentication-flow.md)
+- To see task requirements checklist, see [requirements_checklist.md](./requirements_checklist.md)
