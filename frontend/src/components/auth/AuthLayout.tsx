@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AppLogo } from "../common/AppLogo";
+import { useAuth } from "../../hooks/useAuth";
 
 interface AuthLayoutProps {
   children: ReactNode;
@@ -21,6 +23,8 @@ export function AuthLayout({
   maxWidth,
 }: AuthLayoutProps) {
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
+  const { isAuthenticated, isLoading } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -29,6 +33,28 @@ export function AuthLayout({
 
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    // Redirect to home if user is authenticated
+    if (!isLoading && isAuthenticated) {
+      navigate("/", { replace: true });
+    }
+  }, [isAuthenticated, isLoading, navigate]);
+
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
+  }
+
+  // Don't render auth forms if user is already authenticated
+  // (Navigation will happen in useEffect)
+  if (isAuthenticated) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen w-screen flex flex-col lg:flex-row">
