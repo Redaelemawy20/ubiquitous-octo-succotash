@@ -1,4 +1,14 @@
-### Sign up a new user with invalid password
+### ============================================
+### Authentication API Endpoints
+### ============================================
+### Note: These endpoints use HTTP-only cookies for token storage.
+### REST Client automatically handles cookies in requests.
+
+### ============================================
+### 1. SIGN UP
+### ============================================
+
+### Sign up with invalid password (missing special character)
 POST http://localhost:3000/api/v1/auth/signup
 Content-Type: application/json
 
@@ -8,26 +18,94 @@ Content-Type: application/json
   "password": "password123"
 }
 
-### Sign up a new user with valid password
+### Sign up with valid password
 POST http://localhost:3000/api/v1/auth/signup
 Content-Type: application/json
 
 {
   "name": "John Doe",
   "email": "john@example.com",
-  "password": "password123#"
+  "password": "Password123#"
 }
 
-### Sign in with existing user
+### Sign up with invalid email format
+POST http://localhost:3000/api/v1/auth/signup
+Content-Type: application/json
+
+{
+  "name": "Jane Doe",
+  "email": "invalid-email",
+  "password": "Password123#"
+}
+
+### Sign up with short name (less than 3 characters)
+POST http://localhost:3000/api/v1/auth/signup
+Content-Type: application/json
+
+{
+  "name": "Jo",
+  "email": "jane@example.com",
+  "password": "Password123#"
+}
+
+### ============================================
+### 2. SIGN IN
+### ============================================
+
+### Sign in with valid credentials
+### Note: This sets HTTP-only cookies (token & refreshToken)
 POST http://localhost:3000/api/v1/auth/login
 Content-Type: application/json
 
 {
   "email": "john@example.com",
-  "password": "password123"
+  "password": "Password123#"
 }
 
-### Get profile of authenticated user
+### Sign in with invalid email
+POST http://localhost:3000/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "wrong@example.com",
+  "password": "Password123#"
+}
+
+### Sign in with invalid password
+POST http://localhost:3000/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "john@example.com",
+  "password": "WrongPassword123#"
+}
+
+### ============================================
+### 3. PROTECTED ENDPOINTS
+### ============================================
+### Note: These endpoints require authentication (cookies from login)
+
+### Get current user profile
+### Requires: Authentication cookie from login
 GET http://localhost:3000/api/v1/auth/me
+
+### Logout user
+### Requires: Authentication cookie from login
+### Note: This clears all tokens and removes refresh token from database
+POST http://localhost:3000/api/v1/auth/logout
+
+### ============================================
+### 4. TOKEN REFRESH
+### ============================================
+
+### Refresh access token
+### Requires: Refresh token cookie from login
+### Note: Automatically called by frontend when access token expires
+POST http://localhost:3000/api/v1/auth/refresh
+
+### Refresh token without cookie (should fail)
+POST http://localhost:3000/api/v1/auth/refresh
+Content-Type: application/json
+
 
 
