@@ -7,22 +7,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+
     // Check if user is authenticated by calling the backend
     const checkAuth = async () => {
       try {
         const userData = await getCurrentUser();
-        if (userData?.user) {
-          setUser(userData.user);
+        if (isMounted) {
+          if (userData?.user) {
+            setUser(userData.user);
+          } else {
+            setUser(null);
+          }
         }
       } catch {
         // User not authenticated or network error
-        setUser(null);
+        if (isMounted) {
+          setUser(null);
+        }
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
 
     checkAuth();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const login = (newUser: User) => {

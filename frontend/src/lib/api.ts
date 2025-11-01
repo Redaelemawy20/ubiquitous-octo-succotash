@@ -117,12 +117,29 @@ export async function getCurrentUser(): Promise<{
   user: AuthResponse["user"];
 } | null> {
   try {
-    // Use authenticatedRequest to get automatic token refresh
-    return await authenticatedRequest<{
-      user: AuthResponse["user"];
-    }>("/auth/me", {
+    let response = await fetchWithCredentials(`${API_BASE_URL}/auth/me`, {
       method: "GET",
     });
+
+    // If 401, try to refresh token and retry
+    if (response.status === 401) {
+      try {
+        await refreshAccessToken();
+        // Retry after refresh
+        response = await fetchWithCredentials(`${API_BASE_URL}/auth/me`, {
+          method: "GET",
+        });
+      } catch {
+        // Refresh failed, user needs to login
+        return null;
+      }
+    }
+
+    if (!response.ok) {
+      return null; // User not authenticated
+    }
+
+    return response.json();
   } catch {
     return null; // Network error or not authenticated
   }

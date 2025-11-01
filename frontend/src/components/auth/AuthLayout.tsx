@@ -39,7 +39,8 @@ export function AuthLayout({
     if (!isLoading && isAuthenticated) {
       navigate("/", { replace: true });
     }
-  }, [isAuthenticated, isLoading, navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, isLoading]);
 
   // Show loading state while checking authentication
   if (isLoading) {
