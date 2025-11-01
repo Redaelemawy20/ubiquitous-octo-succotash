@@ -22,6 +22,7 @@ import { SigninDocs } from './decorators/signin.docs';
 import { LogoutDocs } from './decorators/logout.docs';
 import { MeDocs } from './decorators/me.docs';
 import { RefreshDocs } from './decorators/refresh.docs';
+import { UserDocument } from 'src/users/user.schema';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -101,7 +102,7 @@ export class AuthController {
   @UseGuards(AuthGuard)
   @LogoutDocs()
   async logout(
-    @CurrentUser() user: { _id: string; email: string; name?: string },
+    @CurrentUser() user: Omit<UserDocument, 'password'>,
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
@@ -115,7 +116,10 @@ export class AuthController {
     const refreshToken = request.cookies?.refreshToken as string | undefined;
     if (refreshToken) {
       try {
-        await this.authService.removeRefreshToken(user._id, refreshToken);
+        await this.authService.removeRefreshToken(
+          String(user._id),
+          refreshToken,
+        );
       } catch (error) {
         this.logger.log({
           level: 'warn',
@@ -190,9 +194,7 @@ export class AuthController {
   @Get('me')
   @UseGuards(AuthGuard)
   @MeDocs()
-  getProfile(
-    @CurrentUser() user: { _id: string; email: string; name?: string },
-  ) {
+  getProfile(@CurrentUser() user: Omit<UserDocument, 'password'>) {
     return { user };
   }
 }
