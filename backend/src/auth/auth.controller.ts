@@ -8,6 +8,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { ConfigService } from '@nestjs/config';
 import type { Response } from 'express';
 import { AuthService } from './auth.service';
 import { SignupDto } from './dto/signup.dto';
@@ -23,7 +24,10 @@ import { MeDocs } from './decorators/me.docs';
 @Controller('auth')
 export class AuthController {
   private readonly logger = new Logger(AuthController.name);
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private configService: ConfigService,
+  ) {}
 
   @Post('signup')
   @SignupDocs()
@@ -38,12 +42,16 @@ export class AuthController {
     });
     const result = await this.authService.signUp(signupDto);
 
+    // Get JWT expiration time (in seconds) and convert to milliseconds for cookie
+    const jwtExpiresIn = this.configService.get<number>('JWT_EXPIRES_IN', 3600);
+    const cookieMaxAge = jwtExpiresIn * 1000; // Convert seconds to milliseconds
+
     // Set HTTP-only cookie
     response.cookie('token', result.access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production', // HTTPS in production
       sameSite: 'strict',
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      maxAge: cookieMaxAge,
     });
 
     // Return user data without token
@@ -66,12 +74,16 @@ export class AuthController {
       signinDto.password,
     );
 
+    // Get JWT expiration time (in seconds) and convert to milliseconds for cookie
+    const jwtExpiresIn = this.configService.get<number>('JWT_EXPIRES_IN', 3600);
+    const cookieMaxAge = jwtExpiresIn * 1000; // Convert seconds to milliseconds
+
     // Set HTTP-only cookie
     response.cookie('token', result.access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production', // HTTPS in production
       sameSite: 'strict',
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      maxAge: cookieMaxAge,
     });
 
     // Return success without token
