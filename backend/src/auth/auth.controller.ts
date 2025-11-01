@@ -4,12 +4,14 @@ import {
   Post,
   Get,
   Res,
+  Req,
   UseGuards,
   Logger,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { SignupDto } from './dto/signup.dto';
 import { SigninDto } from './dto/signin.dto';
@@ -31,10 +33,7 @@ export class AuthController {
 
   @Post('signup')
   @SignupDocs()
-  async signUp(
-    @Body() signupDto: SignupDto,
-    @Res({ passthrough: true }) response: Response,
-  ) {
+  async signUp(@Body() signupDto: SignupDto) {
     this.logger.log({
       level: 'info',
       message: 'signUp request received',
@@ -42,20 +41,11 @@ export class AuthController {
     });
     const result = await this.authService.signUp(signupDto);
 
-    // Get JWT expiration time (in seconds) and convert to milliseconds for cookie
-    const jwtExpiresIn = this.configService.get<number>('JWT_EXPIRES_IN', 3600);
-    const cookieMaxAge = jwtExpiresIn * 1000; // Convert seconds to milliseconds
-
-    // Set HTTP-only cookie
-    response.cookie('token', result.access_token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // HTTPS in production
-      sameSite: 'strict',
-      maxAge: cookieMaxAge,
-    });
-
-    // Return user data without token
-    return { user: result.user };
+    // Return user data - user needs to login to get authenticated
+    return {
+      message: 'User created successfully. Please login to continue.',
+      user: result.user,
+    };
   }
 
   @Post('login')
@@ -76,14 +66,30 @@ export class AuthController {
 
     // Get JWT expiration time (in seconds) and convert to milliseconds for cookie
     const jwtExpiresIn = this.configService.get<number>('JWT_EXPIRES_IN', 3600);
-    const cookieMaxAge = jwtExpiresIn * 1000; // Convert seconds to milliseconds
+    const accessTokenMaxAge = jwtExpiresIn * 1000; // Convert seconds to milliseconds
 
-    // Set HTTP-only cookie
-    response.cookie('token', result.access_token, {
+    // Get refresh token expiration time (in seconds) and convert to milliseconds
+    const refreshTokenExpiresIn = this.configService.get<number>(
+      'JWT_REFRESH_EXPIRES_IN',
+      7 * 24 * 60 * 60, // 7 days in seconds
+    );
+    const refreshTokenMaxAge = refreshTokenExpiresIn * 1000; // Convert seconds to milliseconds
+
+    const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production', // HTTPS in production
-      sameSite: 'strict',
-      maxAge: cookieMaxAge,
+      sameSite: 'strict' as const,
+    };
+
+    // Set HTTP-only cookies for access and refresh tokens
+    response.cookie('token', result.access_token, {
+      ...cookieOptions,
+      maxAge: accessTokenMaxAge,
+    });
+
+    response.cookie('refreshToken', result.refresh_token, {
+      ...cookieOptions,
+      maxAge: refreshTokenMaxAge,
     });
 
     // Return success without token
@@ -91,20 +97,92 @@ export class AuthController {
   }
 
   @Post('logout')
+  @UseGuards(AuthGuard)
   @LogoutDocs()
-  logout(@Res({ passthrough: true }) response: Response) {
+  async logout(
+    @CurrentUser() user: { _id: string; email: string; name?: string },
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
     this.logger.log({
       level: 'info',
       message: 'User logout request',
-    });
-    // Clear the cookie
-    response.clearCookie('token', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      data: { userId: user._id },
     });
 
+    // Remove refresh token from database
+    const refreshToken = request.cookies?.refreshToken as string | undefined;
+    if (refreshToken) {
+      try {
+        await this.authService.removeRefreshToken(user._id, refreshToken);
+      } catch (error) {
+        this.logger.log({
+          level: 'warn',
+          message: 'Failed to remove refresh token from database',
+          data: { userId: user._id, error: (error as Error).message },
+        });
+      }
+    }
+
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict' as const,
+    };
+
+    // Clear both cookies
+    response.clearCookie('token', cookieOptions);
+    response.clearCookie('refreshToken', cookieOptions);
+
     return { message: 'Logout successful' };
+  }
+
+  @Post('refresh')
+  async refresh(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    this.logger.log({
+      level: 'info',
+      message: 'Refresh token request received',
+    });
+
+    // Get refresh token from cookie
+    const refreshToken = request.cookies?.refreshToken as string | undefined;
+
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token not provided');
+    }
+
+    // Get JWT expiration time (in seconds) and convert to milliseconds for cookie
+    const jwtExpiresIn = this.configService.get<number>('JWT_EXPIRES_IN', 3600);
+    const accessTokenMaxAge = jwtExpiresIn * 1000; // Convert seconds to milliseconds
+
+    try {
+      const result: { access_token: string } =
+        await this.authService.refreshToken(refreshToken);
+
+      // Set new access token cookie
+      response.cookie('token', result.access_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: accessTokenMaxAge,
+      });
+
+      return { message: 'Token refreshed successfully' };
+    } catch (error: unknown) {
+      // Clear invalid refresh token cookie
+      response.clearCookie('refreshToken', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+      });
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new UnauthorizedException('Failed to refresh token');
+    }
   }
 
   @Get('me')

@@ -90,4 +90,39 @@ export class UsersService {
       return false;
     }
   }
+
+  async findById(id: string): Promise<UserDocument | null> {
+    return this.userModel.findById(id).exec();
+  }
+
+  async addRefreshToken(userId: string, refreshToken: string): Promise<void> {
+    await this.userModel
+      .findByIdAndUpdate(userId, {
+        $push: { refreshTokens: refreshToken },
+      })
+      .exec();
+  }
+
+  async removeRefreshToken(
+    userId: string,
+    refreshToken: string,
+  ): Promise<void> {
+    await this.userModel
+      .findByIdAndUpdate(userId, {
+        $pull: { refreshTokens: refreshToken },
+      })
+      .exec();
+  }
+
+  async clearAllRefreshTokens(userId: string): Promise<void> {
+    await this.userModel
+      .findByIdAndUpdate(userId, {
+        $set: { refreshTokens: [] },
+      })
+      .exec();
+  }
+
+  async findByRefreshToken(refreshToken: string): Promise<UserDocument | null> {
+    return this.userModel.findOne({ refreshTokens: refreshToken }).exec();
+  }
 }
